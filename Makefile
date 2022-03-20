@@ -74,7 +74,7 @@ jrandom.1.gz:	jrandom.1
 	$(GZIP) jrandom.1
 
 jrandom.1:	jrandom.man
-	$(NROFF) < jrandom.man > jrandom.1
+	$(CP) jrandom.man jrandom.1
 
 #--- AIX install(1) is odd
 install:	all
