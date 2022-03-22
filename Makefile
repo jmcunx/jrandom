@@ -28,11 +28,15 @@ PRODMAN=$(PRODPMAN)/man1
 WALL=-Wall -m64
 ETAGS=etags
 GZ=.gz
+NROFF=cat
+OSDESC != uname -smr
 
 #--- AIX specific
 #WALL=-bnoquiet
 #ETAGS=true
 #GZ=
+#NROFF=nroff -man
+#OSDESC = `uname -a`
 
 #--- should not have to change these
 NROFF=nroff -man
@@ -45,14 +49,13 @@ GZIP=gzip
 LINK=cc
 LIBS=
 MV=mv
-NROFF=nroff -man
 RM=rm
 STRIP=strip
 MKDIR=mkdir
 
 EXE=
 OBJ=.o
-CFLAGS=-c $(WALL)
+CFLAGS=-c $(WALL) -DOSTYPE="\"$(OSDESC)\""
 LFLAGS=$(WALL) -o jrandom
 
 ALL_OBJ=jrandom$(OBJ)
@@ -74,7 +77,7 @@ jrandom.1.gz:	jrandom.1
 	$(GZIP) jrandom.1
 
 jrandom.1:	jrandom.man
-	$(CP) jrandom.man jrandom.1
+	$(NROFF) jrandom.man > jrandom.1
 
 #--- AIX install(1) is odd
 install:	all

@@ -120,6 +120,9 @@ void show_info(FILE *fp, int rmode)
     {
     case 2:
       fprintf(fp,"%s\n", PROGNAME);
+#ifdef OSTYPE
+      fprintf(fp,"\t%s\n",OSTYPE);
+#endif
       fprintf(fp, LIT_INFO_01, __DATE__, __TIME__);
       break;
     default:
