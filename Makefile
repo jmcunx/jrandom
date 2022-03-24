@@ -19,7 +19,6 @@
 SHELL=/bin/sh
 
 #--- where to install
-DESTDIR=/opt/jmc
 PRODUCTION=$(DESTDIR)/bin
 PRODPMAN=$(DESTDIR)/man
 PRODMAN=$(PRODPMAN)/man1
@@ -49,7 +48,7 @@ GZIP=gzip
 LINK=cc
 LIBS=
 MV=mv
-RM=rm
+RM=rm -f
 STRIP=strip
 MKDIR=mkdir
 
@@ -65,8 +64,12 @@ ALL_H=
 #
 # do the work
 #
-all:	tags $(ALL_OBJ) jrandom.1$(GZ)
+all:	ckenv tags $(ALL_OBJ) jrandom.1$(GZ)
 	$(LINK) $(LFLAGS) $(ALL_OBJ) $(LIBS)
+
+ckenv:
+	echo checking Variable DESTDIR
+	test $(DESTDIR)
 
 tags:	$(ALL_H) $(ALL_C)
 	-$(CTAGS) $(ALL_H) $(ALL_C)

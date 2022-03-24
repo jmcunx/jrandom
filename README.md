@@ -7,3 +7,13 @@ Numbers using a low/max range.
 
 This works fine under Linux, BSD(s) and AIX
 
+To compile
+* Set DESTDIR for where you want this to install.
+  Example: export DESTDIR=/usr/local
+* Edit Makefile if on AIX and comment out the Linux/BSD
+  area and enable AIX Area.
+
+Will install:
+* Binary jrandom
+* Manual jrandom.1[.gz] depending on OS
+
