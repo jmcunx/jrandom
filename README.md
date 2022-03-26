@@ -2,16 +2,17 @@
 
 This will print Random Numbers from /dev/urandom
 
-This will allow you to print some Very Large Random
+It will allow you to print some Very Large Random
 Numbers using a low/max range.
 
 This works fine under Linux, BSD(s) and AIX
 
 To compile
 * Set DESTDIR for where you want this to install.
-  Example: export DESTDIR=/usr/local
+  Examples: setenv DESTDIR /usr/local
+            export DESTDIR=/usr/local
 * Edit Makefile if on AIX and comment out the Linux/BSD
-  area and enable AIX Area.
+  area and uncomment AIX Area.
 
 Will install:
 * Binary jrandom
