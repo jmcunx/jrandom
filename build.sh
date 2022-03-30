@@ -49,7 +49,7 @@ esac
 #------------------------------------------------------------------------------
 # create Makefile
 #------------------------------------------------------------------------------
-sed "s%$g_sed_1%%" < Makefile.unx > Makefile
+sed "s%$g_sed_1%%;s%INCJLIB%$g_include%g;s%JLIBLOC%$g_libloc%g;s%LOCATION%$DESTDIR%" < Makefile.unx > Makefile
 
 cat << EOF
 

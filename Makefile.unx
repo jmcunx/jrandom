@@ -19,6 +19,7 @@
 SHELL=/bin/sh
 
 #--- where to install
+DESTDIR=LOCATION
 PRODUCTION=$(DESTDIR)/bin
 PRODPMAN=$(DESTDIR)/man
 PRODMAN=$(PRODPMAN)/man1
