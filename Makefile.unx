@@ -23,19 +23,41 @@ PRODUCTION=$(DESTDIR)/bin
 PRODPMAN=$(DESTDIR)/man
 PRODMAN=$(PRODPMAN)/man1
 
-#--- Linux and BSD specific
-WALL=-Wall -m64
-ETAGS=etags
-GZ=.gz
-NROFF=cat
-OSDESC != uname -smr
+#>>>>>>> select desired OS
+#--- Linux 64 bit
+#LINUX64#WALL=-Wall -m64
+#LINUX64#ETAGS=etags
+#LINUX64#GZ=.gz
+#LINUX64#NROFF=cat
+#LINUX64#OSDESC != uname -smr
+
+#--- Linux 32 bit
+#LINUX32#WALL=-Wall
+#LINUX32#ETAGS=etags
+#LINUX32#GZ=.gz
+#LINUX32#NROFF=cat
+#LINUX32#OSDESC != uname -smr
+
+#--- BSD 64 bit
+#BSD64#WALL=-Wall -m64
+#BSD64#ETAGS=etags
+#BSD64#GZ=.gz
+#BSD64#NROFF=cat
+#BSD64#OSDESC != uname -smr
+
+#--- BSD 32 bit
+#BSD32#WALL=-Wall
+#BSD32#ETAGS=etags
+#BSD32#GZ=.gz
+#BSD32#NROFF=cat
+#BSD32#OSDESC != uname -smr
 
 #--- AIX specific
-#WALL=-bnoquiet
-#ETAGS=true
-#GZ=
-#NROFF=nroff -man
-#OSDESC = `uname -a`
+#AIX#WALL=-bnoquiet
+#AIX#ETAGS=true
+#AIX#GZ=
+#AIX#NROFF=nroff -man
+#AIX#OSDESC = `uname -a`
 
 #--- should not have to change these
 NROFF=nroff -man
@@ -55,7 +77,7 @@ MKDIR=mkdir
 EXE=
 OBJ=.o
 CFLAGS=-c $(WALL) -DOSTYPE="\"$(OSDESC)\""
-LFLAGS=$(WALL) -o jrandom
+LFLAGS=$(WALL) -o jrandom $(LIBS)
 
 ALL_OBJ=jrandom$(OBJ)
 ALL_C=jrandom.c
@@ -82,7 +104,7 @@ jrandom.1.gz:	jrandom.1
 jrandom.1:	jrandom.man
 	$(NROFF) jrandom.man > jrandom.1
 
-#--- AIX install(1) is odd
+#--- AIX install(1) is odd compared to BSDs and Linux
 install:	all
 	-$(MKDIR) $(PRODUCTION)
 	-$(MKDIR) $(PRODPMAN)
@@ -93,8 +115,13 @@ install:	all
 	-$(STRIP) jrandom
 	$(CP) jrandom $(PRODUCTION)/jrandom
 	$(CHMOD) 755 $(PRODUCTION)/jrandom
-	$(CP) jrandom.1.gz $(PRODMAN)/jrandom.1$(GZ)
+	$(CP) jrandom.1$(GZ) $(PRODMAN)/jrandom.1$(GZ)
 	$(CHMOD) 644 $(PRODMAN)/jrandom.1$(GZ)
+
+uninstall:	all
+	-$(RM) $(PRODUCTION)/jrandom
+	-$(RM) $(PRODMAN)/jrandom.1.gz
+	-$(RM) $(PRODMAN)/jrandom.1
 
 clean:
 	-$(RM) *$(OBJ)
@@ -109,5 +136,7 @@ clean:
 	-$(RM) *.pdb
 	-$(RM) *.ilk
 	-$(RM) *.bak
+	-$(RM) Makefile
 
 ### END
+

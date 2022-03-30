@@ -8,11 +8,9 @@ Numbers using a low/max range.
 This works fine under Linux, BSD(s) and AIX
 
 To compile
-* Set DESTDIR for where you want this to install.
-  Examples: setenv DESTDIR /usr/local
-            export DESTDIR=/usr/local
-* Edit Makefile if on AIX and comment out the Linux/BSD
-  area and uncomment AIX Area.
+* If "DESTDIR" is not set, will install under /usr/local
+* Execute ./build.sh to create a Makefile
+* Works on Linux, BSD and AIX
 
 Will install:
 * Binary jrandom
