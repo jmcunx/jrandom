@@ -23,6 +23,9 @@ jrandom [OPTIONS]
 Will print one of more Random Numbers.
 Optionally you can specify a low/high range.
 .TP
+-h
+Show brief help and exit.
+.TP
 -I n
 Optional, after printing 'n' Random Numbers pause
 a specified number of seconds.
@@ -43,6 +46,9 @@ Optional, pause 'n' seconds after printing a
 specified number of Random Numbers.
 Default, pause 1 second.
 See '-I'.
+.TP
+-V
+Output version information and exit.
 .TP
 -v
 Optional, Verbose Level.
