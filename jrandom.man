@@ -69,8 +69,8 @@ If printing a large number of Random Numbers,
 you should specify '-s' and maybe '-I' to prevent
 some systems from running out of Random Numbers.
 .PP
-The largest number printed is equal to UINT_MAX
-as defined in limits.h
+The largest number that cam be printed is equal to the
+number of digits in UINT_MAX as defined in limits.h minus 1.
 .SH FILES
 /dev/urandom - Get Random Numbers
 .SH SEE-ALSO

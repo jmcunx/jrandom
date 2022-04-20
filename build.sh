@@ -46,10 +46,18 @@ case "`uname -m`" in
 	;;
 esac
 
+type ectags > /dev/null 2>&1
+if test "$?" -eq "0"
+then
+    g_sed_2="=ectags"
+else
+    g_sed_2="=ctags"
+fi
+
 #------------------------------------------------------------------------------
 # create Makefile
 #------------------------------------------------------------------------------
-sed "s%$g_sed_1%%;s%INCJLIB%$g_include%g;s%JLIBLOC%$g_libloc%g;s%LOCATION%$DESTDIR%" < Makefile.unx > Makefile
+sed "s%$g_sed_1%%;s%=ctags%$g_sed_2%;s%INCJLIB%$g_include%g;s%JLIBLOC%$g_libloc%g;s%LOCATION%$DESTDIR%" < Makefile.unx > Makefile
 
 cat << EOF
 

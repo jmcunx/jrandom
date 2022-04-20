@@ -55,11 +55,14 @@
 #define LIT_PROG     "Print one or more Random Number(s)"
 
 #define MSG_ERR_E000    "Try '%s %c%c' for more information\n"
-#define MSG_ERR_E004L   "ERROR E004: value %lld invalid value for %c%c\n"
+#define MSG_ERR_E004    "ERROR E004: value %s invalid value for %c%c\n"
+#define MSG_ERR_E004L   "ERROR E004: value %llu invalid value for %c%c\n"
 #define MSG_ERR_E006    "ERROR E006: '%s' is an invalid value for %c%c\n"
 #define MSG_ERR_E056    "ERROR E056: Open Error on File '%s' : %s\n"
 #define MSG_ERR_E074    "ERROR E074: 'Too many Arguments specified for %c%c\n"
-#define MSG_ERR_E088LL  "ERROR E088: Minimum Value %lld must be less than Maximum Value %lld\n"
+#define MSG_ERR_E086    "ERROR E086: Value %s for Arg %c%c too big, must be less than %d digits\n"
+#define MSG_ERR_E087    "ERROR E087: Value %s for Arg %c%c too large, must be less than %llu\n"
+#define MSG_ERR_E088    "ERROR E088: Minimum Value %llu must be less than Maximum Value %llu\n"
 
 #define USG_MSG_USAGE_1          "usage:\t%s [OPTIONS]\n"
 #define USG_MSG_OPTIONS          "Options\n"
@@ -145,13 +148,18 @@ void show_info(FILE *fp, int rmode)
 } /* show_info() */
 
 /*
- * get_ll() -- process long long argument
+ * get_ull() -- unsigned long long sometimes has conversion
+ *              issues, so logic exists to get around that issue.
  */
-long long get_ll(char *argval, char arg, long long current_val)
+NUM get_ull(char *argval, char arg, NUM current_val)
 {
-  long long val = 0LL;
+  double val = (double) 0;
+  char cmax[2049];
+  int msize = 0;
 
-  if (current_val != 0LL)
+  memset(cmax, 0x00, 2049);
+
+  if (current_val != (NUM) 0)
     {
       fprintf(stderr, MSG_ERR_E074, SWITCH_CHAR, arg);
       fprintf(stderr, MSG_ERR_E000, PROGNAME, SWITCH_CHAR, ARG_HELP);
@@ -165,18 +173,32 @@ long long get_ll(char *argval, char arg, long long current_val)
       exit(EXIT_FAILURE);
     }
 
-  val = atoll(argval);
+  val = atof(argval);
+  snprintf(cmax, 2048, "%llu",ULLONG_MAX);
+  msize = strlen(cmax) - 1;
 
-  if (val < 0LL)
+  if (val < (double) 0)
     {
-      fprintf(stderr, MSG_ERR_E004L, val, SWITCH_CHAR, arg);
+      fprintf(stderr, MSG_ERR_E004, argval, SWITCH_CHAR, arg);
+      fprintf(stderr, MSG_ERR_E000,  PROGNAME, SWITCH_CHAR, ARG_HELP);
+      exit(EXIT_FAILURE);
+    }
+  if (strlen(argval) > msize)
+    {
+      fprintf(stderr, MSG_ERR_E086, argval, SWITCH_CHAR, arg, (msize +1));
+      fprintf(stderr, MSG_ERR_E000,  PROGNAME, SWITCH_CHAR, ARG_HELP);
+      exit(EXIT_FAILURE);
+    }
+  if (val >= (double) (ULLONG_MAX - 1))
+    {
+      fprintf(stderr, MSG_ERR_E087, argval, SWITCH_CHAR, arg, (ULLONG_MAX - 1));
       fprintf(stderr, MSG_ERR_E000,  PROGNAME, SWITCH_CHAR, ARG_HELP);
       exit(EXIT_FAILURE);
     }
 
-  return(val);
+  return((NUM) val);
 
-} /* get_ll() */
+} /* get_ull() */
 
 /*
  * process_arg() -- process arguments
@@ -186,11 +208,11 @@ void process_arg(int argc, char **argv, struct s_args *args)
 {
   char ckarg[SCKARG];
   int opt;
-  long long secs       = 0LL;
-  long long min        = 0LL;
-  long long max        = 0LL;
-  long long iterations = 0LL;
-  long long most       = 0LL;
+  NUM secs       = (NUM) 0;
+  NUM min        = (NUM) 0;
+  NUM max        = (NUM) 0;
+  NUM iterations = (NUM) 0;
+  NUM most       = (NUM) 0;
 
   args->verbose     = 0;
   args->iterations  = (unsigned int) 500;
@@ -218,19 +240,19 @@ void process_arg(int argc, char **argv, struct s_args *args)
 	  args->verbose++;
 	  break;
 	case ARG_MIN_VALUE:
-	  min = get_ll(optarg, ARG_MIN_VALUE, min);
+	  min = get_ull(optarg, ARG_MIN_VALUE, min);
 	  break;
 	case ARG_MAX_VALUE:
-	  max = get_ll(optarg, ARG_MAX_VALUE, max);
+	  max = get_ull(optarg, ARG_MAX_VALUE, max);
 	  break;
 	case ARG_MOST:
-	  most = get_ll(optarg, ARG_MOST, most);
+	  most = get_ull(optarg, ARG_MOST, most);
 	  break;
 	case ARG_ITERATIONS:
-	  iterations = get_ll(optarg, ARG_ITERATIONS, iterations);
+	  iterations = get_ull(optarg, ARG_ITERATIONS, iterations);
 	  break;
 	case ARG_SLEEP:
-	  secs = get_ll(optarg, ARG_SLEEP, secs);
+	  secs = get_ull(optarg, ARG_SLEEP, secs);
 	  break;
 	default:
 	  fprintf(stderr, MSG_ERR_E000, PROGNAME, SWITCH_CHAR, ARG_HELP);
@@ -258,12 +280,12 @@ void process_arg(int argc, char **argv, struct s_args *args)
       fprintf(stderr, MSG_ERR_E000,  PROGNAME,   SWITCH_CHAR, ARG_HELP);
       exit(EXIT_FAILURE);
     }
-  if ((max != 0LL) || (min != 0LL))
+  if ((max != (NUM) 0) || (min != (NUM) 0))
     {
       if (min >= max)
 	{
-	  fprintf(stderr, MSG_ERR_E088LL, min, max);
-	  fprintf(stderr, MSG_ERR_E000,   PROGNAME,   SWITCH_CHAR, ARG_HELP);
+	  fprintf(stderr, MSG_ERR_E088, min, max);
+	  fprintf(stderr, MSG_ERR_E000, PROGNAME,   SWITCH_CHAR, ARG_HELP);
 	  exit(EXIT_FAILURE);
 	}
     }
