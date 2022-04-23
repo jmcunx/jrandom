@@ -54,16 +54,32 @@ else
     g_sed_2="=ctags"
 fi
 
+case "$CC" in
+    "cc")
+	g_sed_3="CC=cc"
+	;;
+    "gcc")
+	g_sed_3="CC=gcc"
+	;;
+    "clang")
+	g_sed_3="CC=clang"
+	;;
+    *)
+	g_sed_3="CC=cc"
+	;;
+esac
+
 #------------------------------------------------------------------------------
 # create Makefile
 #------------------------------------------------------------------------------
-sed "s%$g_sed_1%%;s%=ctags%$g_sed_2%;s%INCJLIB%$g_include%g;s%JLIBLOC%$g_libloc%g;s%LOCATION%$DESTDIR%" < Makefile.unx > Makefile
+sed "s%$g_sed_1%%;s%=ctags%$g_sed_2%;s%CC=cc%$g_sed_3%;s%INCJLIB%$g_include%g;s%JLIBLOC%$g_libloc%g;s%LOCATION%$DESTDIR%" < Makefile.unx > Makefile
 
 cat << EOF
 
 Created Makefile
     OS     $OS
     Install Location:         $DESTDIR
+    Compiler:                 `echo $g_sed_3 | sed 's/CC=//'`
 
 Review and modify if necessary
 
