@@ -28,6 +28,10 @@
 #include <ctype.h>
 #include <errno.h>
 
+#ifdef OpenBSD
+#include <err.h>
+#endif
+
 #ifndef FILE_URANDOM
 #define FILE_URANDOM "/dev/urandom"
 #endif
@@ -55,14 +59,25 @@
 #define LIT_PROG     "Print one or more Random Number(s)"
 
 #define MSG_ERR_E000    "Try '%s %c%c' for more information\n"
-#define MSG_ERR_E004    "ERROR E004: value %s invalid value for %c%c\n"
-#define MSG_ERR_E004L   "ERROR E004: value %llu invalid value for %c%c\n"
-#define MSG_ERR_E006    "ERROR E006: '%s' is an invalid value for %c%c\n"
-#define MSG_ERR_E056    "ERROR E056: Open Error on File '%s' : %s\n"
-#define MSG_ERR_E074    "ERROR E074: 'Too many Arguments specified for %c%c\n"
-#define MSG_ERR_E086    "ERROR E086: Value %s for Arg %c%c too big, must be less than %d digits\n"
-#define MSG_ERR_E087    "ERROR E087: Value %s for Arg %c%c too large, must be less than %llu\n"
-#define MSG_ERR_E088    "ERROR E088: Minimum Value %llu must be less than Maximum Value %llu\n"
+#define MSG_ERR_E004    "E004: value %s invalid value for %c%c\n"
+#define MSG_ERR_E004L   "E004: value %llu invalid value for %c%c\n"
+#define MSG_ERR_E006    "E006: '%s' is an invalid value for %c%c\n"
+#define MSG_ERR_E056    "E056: Open Error on File '%s' : %s\n"
+#define MSG_ERR_E074    "E074: 'Too many Arguments specified for %c%c\n"
+#define MSG_ERR_E086    "E086: Value %s for Arg %c%c too big, must be less than %d digits\n"
+#define MSG_ERR_E087    "E087: Value %s for Arg %c%c too large, must be less than %llu\n"
+#define MSG_ERR_E088    "E088: Minimum Value %llu must be less than Maximum Value %llu\n"
+#define MSG_ERR_E090    "E090: unveil() %d: %s\n"
+#define MSG_ERR_E091    "E091: pledge() %d: %s\n"
+#define MSG_INF_I098    "I098: Random Numbers Written  : %-llu\n"
+#define MSG_INF_I099    "I099: Sleeping                : %-u second(s)\n"
+#define MSG_INF_I100    "I100: Pause after printing    : %-u Random Numbers\n"
+#define MSG_INF_I101    "I101: Minimum Value to Print  : %-llu\n"
+#define MSG_INF_I102    "I102: Maximum Value to Print  : %-llu\n"
+#define MSG_INF_I103    "I103: Number of Items to Print: %-u\n"
+#define MSG_INF_I104    "I104: Pause Seconds           : %-u\n"
+#define MSG_INF_I105    "I105: Verbose Level           : %-d\n"
+#define MSG_INF_I035    "I035: Lines Written           :  %9ld\n"
 
 #define USG_MSG_USAGE_1          "usage:\t%s [OPTIONS]\n"
 #define USG_MSG_OPTIONS          "Options\n"
@@ -74,15 +89,6 @@
 #define USG_MSG_ARG_MAX_VALUE    "\t%c%c n\t\t: Maximum Value\n"
 #define USG_MSG_ARG_ITERATIONS_1 "\t%c%c n\t\t: Pause after processing 'n' Objects\n"
 #define USG_MSG_ARG_MOST         "\t%c%c n\t\t: Print no more than 'n' entries\n"
-#define MSG_INFO_I098            "I098: Random Numbers Written  : %-llu\n"
-#define MSG_INFO_I099            "I099: Sleeping                : %-u second(s)\n"
-#define MSG_INFO_I100            "I100: Pause after printing    : %-u Random Numbers\n"
-#define MSG_INFO_I101            "I101: Minimum Value to Print  : %-llu\n"
-#define MSG_INFO_I102            "I102: Maximum Value to Print  : %-llu\n"
-#define MSG_INFO_I103            "I103: Number of Items to Print: %-u\n"
-#define MSG_INFO_I104            "I104: Pause Seconds           : %-u\n"
-#define MSG_INFO_I105            "I105: Verbose Level           : %-d\n"
-#define MSG_INFO_I035            "I035: Lines Written           :  %9ld\n"
 
 struct s_args
 {
@@ -314,6 +320,13 @@ int main(int argc, char **argv)
   NUM s = (NUM) 0;
   struct s_args args;
 
+#ifdef OpenBSD
+  if (unveil(FILE_URANDOM,"r") == -1)
+    err(1, MSG_ERR_E090, 1, strerror(errno));
+  if(pledge("stdio rpath",NULL) == -1)
+    err(1, MSG_ERR_E091, 1, strerror(errno));
+#endif
+
   process_arg(argc, argv, &args);
 
   fd = open(FILE_URANDOM, O_RDONLY);
@@ -323,14 +336,19 @@ int main(int argc, char **argv)
       exit(EXIT_FAILURE);
     }
 
+#ifdef OpenBSD
+  if(pledge("stdio",NULL) == -1)
+    err(1, MSG_ERR_E091, 2, strerror(errno));
+#endif
+
   if (args.verbose > 1)
     {
-      fprintf(stderr, MSG_INFO_I100, args.iterations);
-      fprintf(stderr, MSG_INFO_I101, args.val_low);
-      fprintf(stderr, MSG_INFO_I102, args.val_high);
-      fprintf(stderr, MSG_INFO_I103, args.print_most);
-      fprintf(stderr, MSG_INFO_I104, args.pause_secs);
-      fprintf(stderr, MSG_INFO_I105, args.verbose);
+      fprintf(stderr, MSG_INF_I100, args.iterations);
+      fprintf(stderr, MSG_INF_I101, args.val_low);
+      fprintf(stderr, MSG_INF_I102, args.val_high);
+      fprintf(stderr, MSG_INF_I103, args.print_most);
+      fprintf(stderr, MSG_INF_I104, args.pause_secs);
+      fprintf(stderr, MSG_INF_I105, args.verbose);
     }
 
   while (most < args.print_most)
@@ -340,7 +358,7 @@ int main(int argc, char **argv)
       if ((args.pause_secs > 0U) && (iterations > args.iterations))
 	{
 	  if (args.verbose > 2)
-	    fprintf(stderr, MSG_INFO_I099, args.pause_secs);
+	    fprintf(stderr, MSG_INF_I099, args.pause_secs);
 	  iterations = 1U;
 	  sleep(args.pause_secs);
 	}
@@ -353,7 +371,7 @@ int main(int argc, char **argv)
 
   if (args.verbose > 0)
     {
-      fprintf(stderr, MSG_INFO_I098, writes);
+      fprintf(stderr, MSG_INF_I098, writes);
     }
 
   close(fd);
